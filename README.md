@@ -39,9 +39,13 @@ The system supports the following functionalities:
     ```
     GEOCODING_API_KEY=your_locationiq_api_key_here
     ```
-4. Run the server:
+    and with your PORT :
+   ```
+    PORT=your port
+    ```
+5. Run the server:
     ```
     npm start
     ```
-5. Open `http://localhost:3001/list` in your browser.
+6. Open `http://localhost:3001/list` in your browser.
 
