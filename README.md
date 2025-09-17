@@ -39,7 +39,7 @@ The system supports the following functionalities:
     ```
     GEOCODING_API_KEY=your_locationiq_api_key_here
     ```
-    and with your PORT :
+    and with your `PORT` :
    ```
     PORT=your port
     ```
