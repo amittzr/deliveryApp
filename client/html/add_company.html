@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Add Company</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Add New Company</h2>
+        <form id="companyForm">
+            <div class="form-group">
+                <label for="name">Company Name</label>
+                <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="form-group">
+                <label for="link">Company Website</label>
+                <input type="url" class="form-control" id="link" required placeholder="https://example.com">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Company</button>
+            <a class="btn btn-primary" href="./list.html">Back</a>
+        </form>
+    </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="/js/add_company.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,237 @@
+// Add custom validation method for text-only fields (no numbers)
+$.validator.addMethod("textOnly", function (value, element) {
+    return this.optional(element) || /^[a-zA-Z\s.-]+$/.test(value);
+}, "This field can only contain letters and spaces");
+
+// Add custom validation method for unique package ID
+// $.validator.addMethod("uniquePackageId", function (value, element) {
+//     if (!value) return true; // Let required validation handle empty values
+
+//     let isUnique = true;
+//     const companyId = getCurrentCompanyId();
+
+//     // Make synchronous AJAX call to check uniqueness
+//     $.ajax({
+//         type: 'GET',
+//         url: `/api/check-package-id/${companyId}/${encodeURIComponent(value)}`,
+//         async: false, // Make it synchronous for validator
+//         success: function (response) {
+//             isUnique = !response.exists;
+//         },
+//         error: function () {
+//             // If API call fails, assume it's unique to not block form submission
+//             isUnique = true;
+//         }
+//     });
+
+//     return isUnique;
+// }, "This package ID is already in use. Please choose a different one.");
+
+$(document).ready(function () {
+    // Set company ID in the title
+    const companyId = getCurrentCompanyId();
+    // document.getElementById('company-id').textContent = companyId;
+    loadCompanyName();
+
+    // Set default dates (today and today + 3 days)
+    setDefaultDates();
+
+    // Form validation
+    setupFormValidation();
+
+    // Form submission
+    setupFormSubmission();
+});
+
+function loadCompanyName() {
+    $.ajax({
+        url: `/company/${getCurrentCompanyId()}`,
+        method: 'GET',
+        success: function (company) {
+            if (company && company.name) {
+                document.getElementById('company-id').textContent = company.name;
+            } else {
+                document.getElementById('company-id').textContent = 'Unknown Company';
+            }
+        },
+        error: function (err) {
+            console.error('Error fetching company name:', err);
+            document.getElementById('company-id').textContent = 'Unknown Company';
+        }
+    });
+}
+
+// Helper function to get company ID from URL
+function getCurrentCompanyId() {
+    const pathParts = window.location.pathname.split('/');
+    return pathParts[pathParts.length - 1];
+}
+
+// Helper function to set default dates
+function setDefaultDates() {
+    const today = new Date();
+    const todayFormatted = today.toISOString().split('T')[0];
+
+    const etaDate = new Date();
+    etaDate.setDate(today.getDate() + 3);
+    const etaFormatted = etaDate.toISOString().split('T')[0];
+
+    // Set current time
+    const hours = String(today.getHours()).padStart(2, '0');
+    const minutes = String(today.getMinutes()).padStart(2, '0');
+    const timeFormatted = `${hours}:${minutes}`;
+
+    // Set default values
+    document.getElementById('start_date').value = todayFormatted;
+    document.getElementById('start_time').value = timeFormatted;
+    document.getElementById('eta_date').value = etaFormatted;
+    document.getElementById('eta_time').value = timeFormatted;
+}
+
+// Helper function to convert date and time inputs to timestamp
+function convertToTimestamp(dateString, timeString) {
+    const combinedString = `${dateString}T${timeString}:00`;
+    const date = new Date(combinedString);
+    return Math.floor(date.getTime() / 1000);
+}
+
+// Setup form validation
+function setupFormValidation() {
+    $("form[name='package_form']").validate({
+        // Validation rules
+        rules: {
+            packageId: {
+                required: true,
+                // minlength: 4,
+                uniquePackageId: true
+            },
+            prod_id: {
+                required: true,
+                // minlength: 4
+            },
+            customer_id: {
+                required: true
+            }
+        },
+        // Error messages
+        messages: {
+            packageId: {
+                required: "Package ID is required",
+                minlength: "Package ID must be at least 4 characters long",
+                uniquePackageId: "This package ID is already in use. Please choose a different one."
+            },
+            prod_id: {
+                required: "Product ID is required",
+                minlength: "Product ID must be at least 4 characters long"
+            },
+            customer_id: {
+                required: "Please select a customer"
+            }
+        },
+        // Error placement
+        errorElement: "div",
+        errorClass: "help-block text-danger",
+        highlight: function (element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        unhighlight: function (element) {
+            $(element).closest('.form-group').removeClass('has-error');
+        },
+        errorPlacement: function (error, element) {
+            error.insertAfter(element);
+        }
+    });
+}
+
+// Setup form submission
+function setupFormSubmission() {
+    $('#package_form').submit(function (event) {
+        // Prevent default form submission
+        event.preventDefault();
+
+        // Validate form
+        if (!$("#package_form").valid()) return;
+
+        // Get company ID
+        const companyId = getCurrentCompanyId();
+
+        // Get form values
+        const packageId = $('#package_id').val();
+        const prodId = $('#prod_id').val();
+        const packageName = $('#package_name').val();
+        const customerId = $('#customerSelect').val();
+        // const customerName = $('#customer_name').val();
+        // const customerEmail = $('#customer_email').val();
+        // const street = $('#street').val();
+        // const streetNumber = parseInt($('#street_number').val());
+        // const city = $('#city').val();
+
+        // Get timestamps
+        const startTimestamp = convertToTimestamp(
+            $('#start_date').val(),
+            $('#start_time').val()
+        );
+
+        const etaTimestamp = convertToTimestamp(
+            $('#eta_date').val(),
+            $('#eta_time').val()
+        );
+
+        const status = $('#status').val();
+
+        // Create package data object to send to server
+        const packageData = {
+            // packageId: packageId,
+            prod_id: prodId,
+            name: packageName,
+            customer_id: customerId,
+            // customerName: customerName,
+            // customerEmail: customerEmail,
+            // street: street,
+            // streetNumber: streetNumber,
+            // city: city,
+            start_date: startTimestamp,
+            eta: etaTimestamp,
+            status: status,
+            buisness_id: companyId
+        };
+
+        console.log(packageData);
+
+        // Show loading state
+        $('button[type="submit"]').prop('disabled', true).text('Creating...');
+
+        // Send create request
+        $.ajax({
+            type: 'POST',
+            url: `/company/${companyId}/package`,
+            contentType: 'application/json',
+            data: JSON.stringify(packageData),
+            processData: false,
+            encode: true,
+            success: function (data, textStatus, jQxhr) {
+                console.log("Package created successfully:", data);
+                // Redirect to company packages page
+                window.location.href = `/list/${companyId}`;
+                alert(`Package - ${packageName} added succesfully.`)
+            },
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log("Error creating package:", errorThrown);
+
+                // Handle specific error messages
+                let errorMessage = "Failed to create package. Please try again.";
+                if (jqXhr.responseJSON && jqXhr.responseJSON.details) {
+                    const details = jqXhr.responseJSON.details;
+                    if (details.includes('Package ID already exists')) {
+                        errorMessage = "This package ID is already in use. Please choose a different one.";
+                    } else if (details.includes('address')) {
+                        errorMessage = "Failed to create package. Please verify the address is valid and try again.";
+                    }
+                }
+
+                alert(errorMessage);
+                $('button[type="submit"]').prop('disabled', false).text('Create Package');
+            }
+        });
+    });
+}

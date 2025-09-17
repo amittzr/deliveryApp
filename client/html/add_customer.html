@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Customer</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h2>Add New Customer</h2>
+    <form id="customerForm">
+        <div class="form-group">
+            <label for="name">Customer Name</label>
+            <input type="text" class="form-control" id="name" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Customer Email</label>
+            <input type="email" class="form-control" id="email" required>
+        </div>
+        <div class="form-group">
+            <label for="street">Street</label>
+            <input type="text" class="form-control" id="street" required>
+        </div>
+        <div class="form-group">
+            <label for="street_number">Street Number</label>
+            <input type="text" class="form-control" id="street_number" required>
+        </div>
+        <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" class="form-control" id="city" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Customer</button>
+        <a class="btn btn-primary" href="./list.html">Back</a>
+    </form>
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="/js/add_customer.js"></script>
+</body>
+</html>
